@@ -42,13 +42,7 @@ public class MySimpleUrlAuthenticationSuccessHandler implements AuthenticationSu
         if (session != null) {
             session.setMaxInactiveInterval(30 * 60);
 
-            String username;
-            if (authentication.getPrincipal() instanceof User) {
-            	username = ((User)authentication.getPrincipal()).getEmail();
-            }
-            else {
-            	username = authentication.getName();
-            }
+            String username = extractUserName(authentication);
             LoggedUser user = new LoggedUser(username, activeUserStore);
             session.setAttribute("user", user);
         }
@@ -60,7 +54,7 @@ public class MySimpleUrlAuthenticationSuccessHandler implements AuthenticationSu
     private void loginNotification(Authentication authentication, HttpServletRequest request) {
         try {
             if (authentication.getPrincipal() instanceof User && isGeoIpLibEnabled()) {
-                deviceService.verifyDevice(((User)authentication.getPrincipal()), request);
+                deviceService.verifyDevice(((User) authentication.getPrincipal()), request);
             }
         } catch (Exception e) {
             logger.error("An error occurred while verifying device or location", e);
@@ -92,21 +86,25 @@ public class MySimpleUrlAuthenticationSuccessHandler implements AuthenticationSu
                 break;
             }
         }
-        if (isUser) {
-        	 String username;
-             if (authentication.getPrincipal() instanceof User) {
-             	username = ((User)authentication.getPrincipal()).getEmail();
-             }
-             else {
-             	username = authentication.getName();
-             }
-
-            return "/homepage.html?user="+username;
+        if (isUser || isManager(authentication)) {
+            return "/homepage.html?user=" + extractUserName(authentication);
         } else if (isAdmin) {
-            return "/console";
+                return "/console";
         } else {
             throw new IllegalStateException();
         }
+    }
+
+    private static String extractUserName(Authentication authentication) {
+        if (authentication.getPrincipal() instanceof User) {
+            return ((User) authentication.getPrincipal()).getEmail();
+        } else {
+            return authentication.getName();
+        }
+    }
+
+    private static boolean isManager(Authentication authentication) {
+        return ((User) authentication.getPrincipal()).getRoles().stream().anyMatch(role -> "ROLE_MANAGER".equalsIgnoreCase(role.getName()));
     }
 
     protected void clearAuthenticationAttributes(final HttpServletRequest request) {

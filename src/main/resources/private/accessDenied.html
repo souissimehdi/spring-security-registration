@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
+    <meta charset="UTF-8">
+    <title>Error</title>
+</head>
+<body>
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/homepage.html" th:utext="#{label.pages.home.title}">home</a>
+        </div>
+    </div>
+</nav>
+
+<h1 class="alert alert-danger">Access Denied !</h1>
+
+<b th:text="${#authentication.principal.firstName}"></b> <b th:text="${#authentication.principal.lastName}"></b> attempted to access unauthorized URL
+
+
+</body>
+</html>
